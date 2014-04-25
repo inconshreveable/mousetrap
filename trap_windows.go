@@ -87,7 +87,6 @@ func InvokedFromCommandLine() (bool, error) {
         return true, err
     }
 
-    fmt.Println(pe.szExeFile)
     var path string
     for i, b := range pe.szExeFile[:] {
         if b == 0 {
