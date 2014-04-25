@@ -1,5 +1,4 @@
 // +build windows
-
 package mousetrap
 
 import (
@@ -39,31 +38,28 @@ func getProcessEntry(pid int) (pe *processEntry32, err error) {
         err = fmt.Errorf("CreateToolhelp32Snapshot: %v", e1)
         return
     }
+    defer CloseHandle.Call(snapshot)
 
     var processEntry processEntry32
     processEntry.dwSize = uint32(unsafe.Sizeof(processEntry))
     ok, _ , e1 := Process32First.Call(snapshot, uintptr(unsafe.Pointer(&processEntry)))
     if ok == 0 {
         err = fmt.Errorf("Process32First: %v", e1)
-        goto closeHandle;
+        return
     }
 
     for {
         if processEntry.th32ProcessID == uint32(pid) {
             pe = &processEntry
-            goto closeHandle;
+            return
         }
 
         ok, _, e1 = Process32Next.Call(snapshot, uintptr(unsafe.Pointer(&processEntry)))
         if ok == 0 {
             err = fmt.Errorf("Process32Next: %v", e1)
-            goto closeHandle;
+            return
         }
     }
-
-closeHandle:
-    CloseHandle.Call(snapshot);
-    return
 }
 
 func getppid() (pid int, err error) {
