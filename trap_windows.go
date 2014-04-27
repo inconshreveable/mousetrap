@@ -1,4 +1,5 @@
 // +build windows
+
 package mousetrap
 
 import (
@@ -10,9 +11,18 @@ import (
 )
 
 const (
+    // defined by the Win32 API
     th32cs_snapprocess uintptr = 0x2
 )
 
+var (
+    kernel = syscall.MustLoadDLL("kernel32.dll")
+    CreateToolhelp32Snapshot = kernel.MustFindProc("CreateToolhelp32Snapshot")
+    Process32First = kernel.MustFindProc("Process32First")
+    Process32Next = kernel.MustFindProc("Process32Next")
+)
+
+// ProcessEntry32 structure defined by the Win32 API
 type processEntry32 struct {
     dwSize uint32
     cntUsage uint32
@@ -23,22 +33,16 @@ type processEntry32 struct {
     th32ParentProcessID uint32
     pcPriClassBase int32
     dwFlags uint32
-    szExeFile [0x00000104]byte
+    szExeFile [syscall.MAXPATH]byte
 }
 
 func getProcessEntry(pid int) (pe *processEntry32, err error) {
-    kernel := syscall.MustLoadDLL("kernel32.dll")
-    CreateToolhelp32Snapshot := kernel.MustFindProc("CreateToolhelp32Snapshot")
-    Process32First := kernel.MustFindProc("Process32First")
-    Process32Next := kernel.MustFindProc("Process32Next")
-    CloseHandle := kernel.MustFindProc("CloseHandle")
-
     snapshot, _, e1 := CreateToolhelp32Snapshot.Call(th32cs_snapprocess, uintptr(0));
     if (snapshot == uintptr(syscall.InvalidHandle)) {
         err = fmt.Errorf("CreateToolhelp32Snapshot: %v", e1)
         return
     }
-    defer CloseHandle.Call(snapshot)
+    defer syscall.CloseHandle(snapshot)
 
     var processEntry processEntry32
     processEntry.dwSize = uint32(unsafe.Sizeof(processEntry))
