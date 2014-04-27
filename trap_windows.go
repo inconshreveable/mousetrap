@@ -76,15 +76,21 @@ func getppid() (pid int, err error) {
     return
 }
 
-func InvokedFromCommandLine() (bool, error) {
+// StartedByExplorer returns true if the program was invoked by the user double-clicking
+// on the executable from explorer.exe
+//
+// It is conservative and returns false if any of the internal calls fail.
+// It does not guarantee that the program was run from a terminal. It only can tell you
+// whether it was launched from explorer.exe
+func StartedByExplorer() (bool) {
     ppid, err := getppid()
     if err != nil {
-        return true, err
+        return false
     }
 
     pe, err := getProcessEntry(ppid)
     if err != nil {
-        return true, err
+        return false
     }
 
     var path string
@@ -95,6 +101,5 @@ func InvokedFromCommandLine() (bool, error) {
         }
     }
 
-    isExplorer := strings.HasSuffix(path, "explorer.exe")
-    return !isExplorer, nil
+    return strings.HasSuffix(path, "explorer.exe")
 }
