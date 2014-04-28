@@ -6,7 +6,6 @@ import (
     "os"
     "fmt"
     "syscall"
-    "strings"
     "unsafe"
 )
 
@@ -18,8 +17,8 @@ const (
 var (
     kernel = syscall.MustLoadDLL("kernel32.dll")
     CreateToolhelp32Snapshot = kernel.MustFindProc("CreateToolhelp32Snapshot")
-    Process32First = kernel.MustFindProc("Process32First")
-    Process32Next = kernel.MustFindProc("Process32Next")
+    Process32First = kernel.MustFindProc("Process32FirstW")
+    Process32Next = kernel.MustFindProc("Process32NextW")
 )
 
 // ProcessEntry32 structure defined by the Win32 API
@@ -33,7 +32,7 @@ type processEntry32 struct {
     th32ParentProcessID uint32
     pcPriClassBase int32
     dwFlags uint32
-    szExeFile [syscall.MAXPATH]byte
+    szExeFile [syscall.MAX_PATH]uint16
 }
 
 func getProcessEntry(pid int) (pe *processEntry32, err error) {
@@ -42,7 +41,7 @@ func getProcessEntry(pid int) (pe *processEntry32, err error) {
         err = fmt.Errorf("CreateToolhelp32Snapshot: %v", e1)
         return
     }
-    defer syscall.CloseHandle(snapshot)
+    defer syscall.CloseHandle(syscall.Handle(snapshot))
 
     var processEntry processEntry32
     processEntry.dwSize = uint32(unsafe.Sizeof(processEntry))
@@ -93,13 +92,6 @@ func StartedByExplorer() (bool) {
         return false
     }
 
-    var path string
-    for i, b := range pe.szExeFile[:] {
-        if b == 0 {
-            path = string(pe.szExeFile[:i])
-            break
-        }
-    }
-
-    return strings.HasSuffix(path, "explorer.exe")
+    name := syscall.UTF16ToString(pe.szExeFile[:])
+    return name == "explorer.exe"
 }
