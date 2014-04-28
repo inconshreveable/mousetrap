@@ -2,6 +2,6 @@
 
 package mousetrap
 
-func InvokedFromCommandLine() (bool, error) {
+func StartedByExplorer() (bool) {
     panic("Unimplemented")
 }
