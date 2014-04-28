@@ -2,18 +2,21 @@
 
 mousetrap is a tiny library that answers a single question.
 
-On a Windows machine, was the process invoked via the command line or by
-someone double clicking the executable?
+On a Windows machine, was the process invoked by someone double clicking on
+the executable file while browsing in explorer?
+
+### Motivation
+
+Windows developers unfamiliar with command line tools will often "double-click"
+the executable for a tool. Because most CLI tools print the help and then exit
+when invoked without arguments, this is often very frustrating for those users.
+
+mousetrap provides a way to detect these invocations so that you can provide
+more helpful behavior and instructions on how to run the CLI tool.
 
 ### The interface
 
 The library exposes a single interface:
 
-    func InvokedFromCommandLine() (bool, error)
+    func StartedByExplorer() (bool)
 
-On Windows, when a command line program is "double-clicked"
-from the explorer, the terminal closes immediately after program termination.
-Because the default behavior of most programs is to print the help and exit when
-invoked with no arguments, this leads to an extremely poor user experience for
-users unfamiliar with command line tools. mousetrap provides a way to detect these
-invocations so that you can provide a helpful error message.
