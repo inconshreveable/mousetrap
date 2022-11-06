@@ -1,6 +1,3 @@
-// +build windows
-// +build go1.4
-
 package mousetrap
 
 import (
