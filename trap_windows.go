@@ -1,7 +1,6 @@
 package mousetrap
 
 import (
-	"os"
 	"syscall"
 	"unsafe"
 )
@@ -35,7 +34,7 @@ func getProcessEntry(pid int) (*syscall.ProcessEntry32, error) {
 // It does not guarantee that the program was run from a terminal. It only can tell you
 // whether it was launched from explorer.exe
 func StartedByExplorer() bool {
-	pe, err := getProcessEntry(os.Getppid())
+	pe, err := getProcessEntry(syscall.Getppid())
 	if err != nil {
 		return false
 	}
