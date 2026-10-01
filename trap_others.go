@@ -4,11 +4,12 @@
 package mousetrap
 
 // StartedByExplorer returns true if the program was invoked by the user
-// double-clicking on the executable from explorer.exe
+// double-clicking on the executable from explorer.exe or compatible file
+// managers (such as FilePilot).
 //
 // It is conservative and returns false if any of the internal calls fail.
 // It does not guarantee that the program was run from a terminal. It only can tell you
-// whether it was launched from explorer.exe
+// whether it was launched from explorer.exe or compatible file managers.
 //
 // On non-Windows platforms, it always returns false.
 func StartedByExplorer() bool {
